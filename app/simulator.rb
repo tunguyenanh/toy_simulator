@@ -1,13 +1,11 @@
-#file: app/simulater.rb
+#file: app/simulator.rb
 load 'enums/toy_enums.rb'
 class Simulator
-
-  attr_accessor :position_x, :position_y, :current_rotation
-  def initialize(position_x = 0, position_y = 0, current_rotation = 'NORTH')
-    @position_x = Integer(position_x)
-    @position_y = Integer(position_y)
+  def initialize()
+    @position_x = nil
+    @position_y = nil
     @failed = 0
-    @current_rotation = current_rotation
+    @current_rotation = nil
   end
 
   def left
@@ -20,23 +18,25 @@ class Simulator
   #
   def left_directions
     {
-        "NORTH" => ToyEnums::WEST,
-        "WEST" => ToyEnums::SOUTH,
-        "SOUTH" => ToyEnums::EAST,
-        "EAST" => ToyEnums::NORTH
+        ToyEnums::NORTH => ToyEnums::WEST,
+        ToyEnums::WEST => ToyEnums::SOUTH,
+        ToyEnums::SOUTH => ToyEnums::EAST,
+        ToyEnums::EAST => ToyEnums::NORTH
     }
   end
   #
   def right_directions
     {
-        "NORTH" => ToyEnums::EAST,
-        "EAST" => ToyEnums::SOUTH,
-        "SOUTH" => ToyEnums::WEST,
-        "WEST" => ToyEnums::NORTH
+        ToyEnums::NORTH => ToyEnums::EAST,
+        ToyEnums::EAST => ToyEnums::SOUTH,
+        ToyEnums::SOUTH => ToyEnums::WEST,
+        ToyEnums::WEST => ToyEnums::NORTH
     }
   end
   def report
-    return [@position_x, @position_y, @current_rotation]
+    puts [@position_x, @position_y, @current_rotation].join(',')
+
+
   end
 
   def move
@@ -50,17 +50,66 @@ class Simulator
     when ToyEnums::WEST
       @position_x -=1
     else
-      "You gave me #{x} -- I have no idea what to do with that."
+
     end
   end
-
-  def validate(data)
+=begin
+Validate place is format PLACE x,x,WEST|SOUTH|EAST|NORTH
+=end
+  def validate_place place
+    result = false
+    if place.is_a? String
+      direction = [ToyEnums::NORTH,ToyEnums::EAST,ToyEnums::WEST,ToyEnums::SOUTH].join('|')
+      pattern = "^"+ToyEnums::PLACE+" ["+ToyEnums::MIN_X.to_s+"-"+ToyEnums::MAX_X.to_s+"]{1},["+ToyEnums::MIN_Y.to_s+"-"+ToyEnums::MAX_Y.to_s+"]{1},("+direction+")"
+      result =  place.scan(/#{pattern}/) ? true : false
+    end
+    return result
+  end
+  def load_current_location(position_x,position_y,current_rotation)
+    @position_x = Integer(position_x)
+    @position_y = Integer(position_y)
+    @current_rotation = current_rotation
+  end
+  def run data
+    if data.is_a? Array
+      data.each_with_index do |cmd, index|
+        if index == 0
+          check_first = validate_place cmd
+          if !check_first
+            raise "INVALID DATA INPUT"
+          end
+        end
+        if cmd[ToyEnums::PLACE]
+          result = validate_place cmd
+          if result
+            parsing_place cmd
+          end
+        end
+        if cmd == ToyEnums::MOVE
+          move
+        end
+        if cmd == ToyEnums::LEFT
+          left
+        end
+        if cmd == ToyEnums::RIGHT
+          right
+        end
+        if cmd == ToyEnums::REPORT
+          report
+        end
+      end
+    else
+      raise "INVALID DATA INPUT"
+    end
 
   end
 
-  def load_data(file_name)
-
+  def parsing_place place
+    place_cmd = place.split(' ')
+    params = place_cmd[1].split(',')
+    @position_x =  params[0].to_i
+    @position_y =  params[1].to_i
+    @current_rotation = params[2]
   end
-
-
 end
+
