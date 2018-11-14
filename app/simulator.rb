@@ -7,15 +7,15 @@ class Simulator
     @failed = 0
     @current_rotation = nil
   end
-
+  #rotate for left
   def left
     @current_rotation = left_directions.fetch(@current_rotation)
   end
-
+  #rotate for right
   def right
     @current_rotation = right_directions.fetch(@current_rotation)
   end
-  #
+  #define rotate for left
   def left_directions
     {
         ToyEnums::NORTH => ToyEnums::WEST,
@@ -24,7 +24,7 @@ class Simulator
         ToyEnums::EAST => ToyEnums::NORTH
     }
   end
-  #
+  #define rotate for right
   def right_directions
     {
         ToyEnums::NORTH => ToyEnums::EAST,
@@ -33,12 +33,16 @@ class Simulator
         ToyEnums::WEST => ToyEnums::NORTH
     }
   end
+  #output data with format x,x(WEST|SOUTH|EAST|NORTH)
+  # @return string|raise error message
   def report
-    puts [@position_x, @position_y, @current_rotation].join(',')
-
-
+    if (@position_x.is_a? Integer) && (@position_x.is_a? Integer) && ([ToyEnums::EAST, ToyEnums::SOUTH, ToyEnums::WEST, ToyEnums::NORTH].include? @current_rotation)
+      puts [@position_x, @position_y, @current_rotation].join(',')
+    else
+      raise ToyEnums::MSG_ERROR
+    end
   end
-
+  # call when cmd = MOVE
   def move
     case @current_rotation
     when ToyEnums::NORTH
@@ -53,9 +57,8 @@ class Simulator
 
     end
   end
-=begin
-Validate place is format PLACE x,x,WEST|SOUTH|EAST|NORTH
-=end
+  # Validate place is format PLACE x,x,WEST|SOUTH|EAST|NORTH
+  # @return boolean
   def validate_place place
     result = false
     if place.is_a? String
@@ -65,18 +68,15 @@ Validate place is format PLACE x,x,WEST|SOUTH|EAST|NORTH
     end
     return result
   end
-  def load_current_location(position_x,position_y,current_rotation)
-    @position_x = Integer(position_x)
-    @position_y = Integer(position_y)
-    @current_rotation = current_rotation
-  end
+  #execute data
   def run data
     if data.is_a? Array
       data.each_with_index do |cmd, index|
+        cmd = cmd.strip
         if index == 0
           check_first = validate_place cmd
           if !check_first
-            raise "INVALID DATA INPUT"
+            raise ToyEnums::MSG_ERROR
           end
         end
         if cmd[ToyEnums::PLACE]
@@ -99,17 +99,28 @@ Validate place is format PLACE x,x,WEST|SOUTH|EAST|NORTH
         end
       end
     else
-      raise "INVALID DATA INPUT"
+      raise ToyEnums::MSG_ERROR
     end
-
   end
 
-  def parsing_place place
-    place_cmd = place.split(' ')
-    params = place_cmd[1].split(',')
-    @position_x =  params[0].to_i
-    @position_y =  params[1].to_i
-    @current_rotation = params[2]
+  def parsing_place(place, first=false)
+    begin
+      validate = validate_place place
+      if(validate)
+        place_cmd = place.split(' ')
+        params = place_cmd[1].split(',')
+        @position_x =  params[0].to_i
+        @position_y =  params[1].to_i
+        @current_rotation = params[2]
+      elsif !validate && first
+        raise ToyEnums::MSG_ERROR
+      end
+    rescue
+      if first
+        raise ToyEnums::MSG_ERROR
+      end
+    end
+
   end
 end
 

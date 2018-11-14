@@ -15,4 +15,6 @@ class ToyEnums
 
   MIN_X = 0
   MIN_Y = 0
+
+  MSG_ERROR = "INVALID DATA INPUT"
 end
