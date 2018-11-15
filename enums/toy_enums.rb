@@ -15,6 +15,13 @@ class ToyEnums
 
   MIN_X = 0
   MIN_Y = 0
+  MSG_ERROR = "INVALID DATA EXAMPLE INPUT"
 
-  MSG_ERROR = "INVALID DATA INPUT"
+  ALL_DIRECTION = [
+      self::SOUTH,
+      self::WEST,
+      self::NORTH,
+      self::EAST
+  ]
+
 end

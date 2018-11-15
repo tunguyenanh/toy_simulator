@@ -36,7 +36,7 @@ class Simulator
   #output data with format x,x(WEST|SOUTH|EAST|NORTH)
   # @return string|raise error message
   def report
-    if (@position_x.is_a? Integer) && (@position_x.is_a? Integer) && ([ToyEnums::EAST, ToyEnums::SOUTH, ToyEnums::WEST, ToyEnums::NORTH].include? @current_rotation)
+    if (@position_x.is_a? Integer) && (@position_x.is_a? Integer) && (ToyEnums::ALL_DIRECTION.include? @current_rotation)
       puts [@position_x, @position_y, @current_rotation].join(',')
     else
       raise ToyEnums::MSG_ERROR
@@ -62,7 +62,7 @@ class Simulator
   def validate_place place
     result = false
     if place.is_a? String
-      direction = [ToyEnums::NORTH,ToyEnums::EAST,ToyEnums::WEST,ToyEnums::SOUTH].join('|')
+      direction = ToyEnums::ALL_DIRECTION.join('|')
       pattern = "^"+ToyEnums::PLACE+" ["+ToyEnums::MIN_X.to_s+"-"+ToyEnums::MAX_X.to_s+"]{1},["+ToyEnums::MIN_Y.to_s+"-"+ToyEnums::MAX_Y.to_s+"]{1},("+direction+")"
       result =  place.scan(/#{pattern}/) ? true : false
     end
